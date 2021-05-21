@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        h3{
+            color: darkslateblue;
+            margin-bottom: 20px;
+        }
+        #translated{
+            margin-top: 10px;
+            background-color: azure;
+            color: darkslateblue;
+            border: 2px solid darkslateblue;
+            border-radius: 8px;
+            padding: 12px 20px;
+        }
+        #get_word{
+            margin-top: 10px;
+            border-radius: 8px;
+            background-color: #49afff;
+            border: solid darkslateblue;
+            color: white;
+            padding: 5px 10px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+        }
+        #checking{
+            margin-top: 10px;
+            border-radius: 8px;
+            background-color: #49afff;
+            border: solid darkslateblue;
+            color: white;
+            padding: 5px 10px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+        }
+        #finish{
+            margin-top: 10px;
+            border-radius: 8px;
+            background-color: #49afff;
+            border: solid darkslateblue;
+            color: white;
+            padding: 5px 10px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+        }
+        #message{
+            max-height: 0;
+            position: fixed;
+            top: 40px;
+        }
+        #result{
+            max-height: 0;
+            position: fixed;
+            top: 110px;
+        }
+        #logout{
+            position: fixed;
+            top: 30px;
+            text-align: right;
+            left: 1300px;
+        }
+        a {
+            text-decoration: none;
+            text-transform: uppercase;
+            background-color: darkslateblue;
+            color: azure;
+        }
+        input:focus {
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+<a id="logout" href="/logout_here/"><big>logout</big></a>
+<h3>Print your translation.</h3>
+<div id="message"></div>
+<form>
+    <input autocomplete="off" type="text" id = 'translated'>
+    <input id="get_word" type="button" value="give word" onclick="GetWordToTranslate()">
+    <input type="button" value="check" onclick="CheckYourTranslation()" id="checking">
+</form>
+<div id="result"></div>
+<br>
+<form>
+    <input id="finish" type="button" value="finish test" onclick="StopTest()">
+</form>
+<script>
+    function GetWordToTranslate() {
+        var href = location.href;
+        var book = href.match(/([^\/]*)\/*$/)[1];
+        document.getElementById('result').innerHTML = '';
+        const Http = new XMLHttpRequest();
+        const url = '/give_word/' + book;
+        Http.open("GET", url);
+        Http.send();
+        Http.onreadystatechange = (e) => {
+            var checkit = document.getElementById('checking');
+            console.log(Http.responseText);
+            if (Http.responseText === 'You have no words in this vocabulary. You have nothing to test.'){
+                checkit.disabled = true;
+            }
+            document.getElementById('message').innerHTML = Http.responseText;
+            document.getElementById('message').style.fontSize = "180%";
+            document.getElementById('message').style.color = "darkslateblue";
+        }
+        document.getElementById('translated').value = '';
+    }
+
+    function CheckYourTranslation() {
+        var href = location.href;
+        var book = href.match(/([^\/]*)\/*$/)[1];
+        if (document.getElementById('message').innerHTML.length === 0){
+            document.getElementById('result').innerHTML = 'get the word to translate.';
+            document.getElementById('result').style.color = "darkslateblue";
+        }
+        else {
+            document.getElementById('result').innerHTML = '';
+            let text = '';
+            var time = 2000;
+            var TranslateBox = document.getElementById('translated');
+            var your_translation = TranslateBox.value;
+            const Http = new XMLHttpRequest();
+            const url = '/check/' + your_translation + ">>!<<" + document.getElementById('message').innerHTML + '>>!<<' + book;
+            if (your_translation.length === 0) {
+                document.getElementById('result').innerHTML = 'Please, write your translation.';
+                document.getElementById('result').style.color = "darkslateblue";
+                setTimeout(function () {
+                    document.getElementById('result').innerHTML = ''
+                }, 3000);
+            } else {
+                Http.open("GET", url);
+                Http.send();
+            }
+            Http.onreadystatechange = (e) => {
+                console.log(Http.responseText);
+                if (Http.responseText === 'correct') {
+                    text = Http.responseText;
+                } else {
+                    var arr = Http.responseText.split('>>!<<');
+                    text = arr[0] + ', correct answer is ' + arr[1];
+                    time = 3000;
+                }
+                document.getElementById('result').innerHTML = text;
+                document.getElementById('result').style.color = "darkslateblue";
+                setTimeout(function () {
+                    document.getElementById('result').innerHTML = ''
+                }, time);
+            }
+        }
+    }
+    function StopTest() {
+        var href = location.href;
+        var book = href.match(/([^\/]*)\/*$/)[1];
+        var choice = confirm("Want to finish test?");
+        if (choice){
+            document.location.href = "/add_new/" + book + '/';
+        }
+    }
+</script>
+</body>
+</html>

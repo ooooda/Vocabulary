@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        h2{
+            color: darkslateblue;
+        }
+        #new{
+            background-color: azure;
+            color: darkslateblue;
+            border: 2px solid darkslateblue;
+            border-radius: 8px;
+            padding: 12px 20px;
+        }
+        #translated{
+            background-color: azure;
+            color: #483d8b;
+            border: 2px solid darkslateblue;
+            border-radius: 8px;
+            padding: 12px 20px;
+        }
+        #send_new{
+            border-radius: 8px;
+            background-color: #49afff;
+            border: solid darkslateblue;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+        }
+        #message{
+            max-height: 0;
+            position: fixed;
+            top: 230px;
+        }
+        p{
+            margin-top: 10px;
+        }
+        #delete_word{
+            margin-top: 10px;
+            border-radius: 8px;
+            background-color: #49afff;
+            border: solid darkslateblue;
+            color: white;
+            padding: 2px 4px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+        }
+        #go_to_test{
+            margin-top: 20px;
+            border-radius: 8px;
+            background-color: #49afff;
+            border: solid darkslateblue;
+            color: white;
+            padding: 5px 10px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+        }
+        #back_to_books{
+            margin-top: 20px;
+            border-radius: 8px;
+            background-color: #49afff;
+            border: solid darkslateblue;
+            color: white;
+            padding: 5px 10px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+        }
+        #logout{
+            position: fixed;
+            top: 30px;
+            text-align: right;
+            left: 1300px;
+        }
+        a {
+            text-decoration: none;
+            text-transform: uppercase;
+            background-color: darkslateblue;
+            color: azure;
+        }
+        input:focus {
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+<a id="logout" href="/logout_here/"><big>logout</big></a>
+<form>
+    <h2>new word</h2>
+    <input autocomplete="off" type="text" id='new'>
+    <h2>translation</h2>
+    <input autocomplete="off" type="text" id='translated'>
+    <input type="button" value="send" id='send_new' onclick="SendForm()">
+</form>
+<p></p>
+<div id="message"></div>
+    <form>
+        <input type="button" id="go_to_test" value="go to test" onclick=GoToTest()>
+        <input type="button" id="back_to_books" value="go to the library" onclick="location.href='/library/'">
+    </form>
+<div>
+    {% for item in vocabulary %}
+        <p style="color:{{item.colour_status}}">
+            <button id="delete_word" onclick=DeleteWord("{{item.id}}")>X</button>
+            <big><big>{{item.word}}  -  {{item.translation}}</big></big>
+        </p>
+    {% endfor %}
+</div>
+<script>
+    function SendForm() {
+        var href = location.href;
+        var book = href.match(/([^\/]*)\/*$/)[1];
+        document.getElementById('message').innerHTML = '';
+        var NewBox = document.getElementById('new');
+        var TranslateBox = document.getElementById('translated');
+        var new_word = NewBox.value;
+        var new_translation = TranslateBox.value;
+        const Http = new XMLHttpRequest();
+        const url = '/send/' + new_word + '>>!<<' + new_translation + '>>!<<' + book;
+        let text;
+        if (new_word.length === 0) {
+            text = 'word-field is empty, please add it';
+        } else if (new_translation.length === 0) {
+            text = 'translation-field is empty, please add it';
+        } else {
+            Http.open("GET", url);
+            Http.send();
+            text = 'ok';
+        }
+
+        document.getElementById('message').innerHTML = text;
+        document.getElementById('message').style.color = "darkslateblue";
+        setTimeout(function () {
+            document.getElementById('message').innerHTML = ''
+        }, 6000);
+
+        Http.onreadystatechange = (e) => {
+            console.log(Http.responseText);
+            var arr = Http.responseText.split('.');
+            let string = arr[0];
+            if (string === 'This word already exists') {
+                let old_translation = arr[1];
+                text = "This word was already translated. Translation is: " + old_translation + '. ';
+                let text2 = 'If you want to change it, write this word and new translation within 1 min.';
+                document.getElementById('message').innerHTML = text + text2;
+                document.getElementById('message').style.color = "darkslateblue";
+                setTimeout(function () {
+                    document.getElementById('message').innerHTML = ''
+                }, 6000);
+            } else if (string === 'Translation was changed') {
+                document.getElementById('message').innerHTML = 'Translation was successfully changed.';
+                setTimeout(function () {
+                    document.getElementById('message').innerHTML = ''
+                }, 3000);
+            }
+            var info = document.getElementById('message').innerHTML;
+            if (info === 'Translation was successfully changed.'){
+                setTimeout(function () { location.reload(true); }, 3000);
+            }
+            else if (info === 'ok') {
+                setTimeout(function () { location.reload(true); }, 2000);
+            }
+        }
+        setTimeout(function () {
+            document.getElementById('new').value = '';
+            document.getElementById('translated').value = '';
+        }, 3000);
+    }
+    function DeleteWord(id){
+        var href = location.href;
+        var book = href.match(/([^\/]*)\/*$/)[1];
+        const Http = new XMLHttpRequest();
+        const url = '/delete_from_db/' + id + ' ' + book;
+        Http.open("GET", url);
+        Http.send();
+        Http.onreadystatechange = (e) => {
+            console.log(Http.responseText);
+            if (Http.responseText === 'deleted'){
+                location.reload();
+                return false;
+            }
+        }
+    }
+
+    function GoToTest(){
+        var href = location.href;
+        var book = href.match(/([^\/]*)\/*$/)[1];
+        window.location.replace('/test_all/' + book);
+    }
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        #password{
+            margin-left: 3px;
+            background-color: darkslateblue;
+            color: azure;
+            border: 2px solid #261f4a;
+            padding: 5px 10px;
+            font-family: Chalkboard;
+        }
+        #login{
+            font-family: Chalkboard;
+            margin-left: 31px;
+            background-color: darkslateblue;
+            color: azure;
+            border: 2px solid #261f4a;
+            padding: 5px 10px;
+        }
+        p{
+            color: darkslateblue;
+        }
+        #login_button{
+            background-color: darkslateblue;
+            border: solid darkslateblue;
+            color: white;
+            padding: 2px 5px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 16px;
+        }
+        #message{
+            text-transform: uppercase;
+            background-color: darkslateblue;
+            color: azure;
+        }
+        input:focus{
+            outline: none;
+        }
+        h4{
+            font-family: Chalkboard;
+            position: fixed;
+            top: 180px;
+        }
+        a{
+            color: darkslateblue;
+        }
+        ::placeholder {
+            color: cadetblue;
+        }
+    </style>
+</head>
+<body>
+<form method="POST", action="">
+    {% csrf_token %}
+    <p><big>Login</big> <input id="login" type="text" name="username"></p>
+    <p><big>Password </big><input autocomplete="off" id="password" type="password" name="password"></p>
+    <input type="submit" name="enter" value="Login" id="login_button">
+    {{form.errors}}
+    {% for message in messages %}
+        <p><big id="message">{{message}}</big></p>
+    {% endfor %}
+</form>
+<h4>Don't have an account? <a href="/register/" class="ml-2">Sign Up</a></h4>
+<script>
+    document.getElementById('login').placeholder='Login..';
+    document.getElementById('password').placeholder='Password..';
+</script>
+</body>
+</html>

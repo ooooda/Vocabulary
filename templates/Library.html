@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        #message{
+            max-height: 0;
+        }
+        #put_book{
+            margin-bottom: 10px;
+            background-color: azure;
+            color: darkslateblue;
+            border: 2px solid darkslateblue;
+            border-radius: 8px;
+            padding: 12px 20px;
+        }
+        #book{
+            margin-top: 5px;
+            border-radius: 8px;
+            background-color: #49afff;
+            border: solid darkslateblue;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+        }
+        #add_new{
+            margin-bottom: 10px;
+            border-radius: 8px;
+            background-color: #49afff;
+            border: solid darkslateblue;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+        }
+        #delete_button{
+            margin-top: 5px;
+            border-radius: 8px;
+            background-color: #49afff;
+            border: solid darkslateblue;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+        }
+        .inner{
+             display: inline-block;
+        }
+        #logout{
+            position: fixed;
+            top: 30px;
+            text-align: right;
+            left: 1300px;
+        }
+        a {
+            text-decoration: none;
+            text-transform: uppercase;
+            background-color: darkslateblue;
+            color: azure;
+        }
+        input:focus {
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="color: darkslateblue" align="center">Hello, {{request.user}}. Choose the book or create a new one.</h1>
+    <a id="logout" href="/logout_here/"><big>logout</big></a>
+    <div class="inner">
+        <form>
+            <input autocomplete="off" type="text" id="put_book">
+        </form>
+    </div>
+    <div class="inner">
+        <button id="add_new" onclick="add_new_book()">+ add new</button>
+    </div>
+    <div id="message"></div>
+    {% for item in books %}
+        <p>
+            <button id="delete_button" onclick=DeleteBook('{{item.id}}'+'........'+'{{item.user_id}}');>X</button>
+            <button id="book" onclick="location.href='/add_new/'+'{{item.book}}';"><big>{{item.book}}</big></button>
+        </p>
+    {% endfor %}
+    <script>
+        function add_new_book() {
+            var name_book = document.getElementById('put_book');
+            var name = name_book.value;
+            if (name.length === 0) {
+                document.getElementById('message').innerText = 'You cannot add a book without a name.';
+                document.getElementById('message').style.color = "darkslateblue";
+                setTimeout(function () {
+                    document.getElementById('message').innerHTML = ''
+                }, 3000);
+            } else {
+                const Http = new XMLHttpRequest();
+                const url = '/library_add/' + name;
+                Http.open("GET", url);
+                Http.send();
+                Http.onreadystatechange = (e) => {
+                    console.log(Http.responseText);
+                    if (Http.responseText === 'success'){
+                        document.getElementById('message').innerText = 'New book was added.';
+                        setTimeout(function () {
+                            document.getElementById('put_book').value = '';
+                        }, 3000);
+                        document.getElementById('message').style.color = "darkslateblue";
+                        setTimeout(function () { location.reload(true); }, 3000);
+                        setTimeout(function () {
+                            document.getElementById('message').innerHTML = ''
+                        }, 3000);
+                    }
+                }
+            }
+        }
+        function DeleteBook(ids){
+            const Http = new XMLHttpRequest();
+            const url = '/delete_book/' + ids;
+            Http.open("GET", url);
+            Http.send();
+            Http.onreadystatechange = (e) => {
+                console.log(Http.responseText);
+                if (Http.responseText === 'deleted'){
+                    location.reload();
+                    return false;
+                }
+            }
+        }
+    </script>
+</body>
+</html>

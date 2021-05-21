@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        p{
+            color: darkslateblue;
+        }
+        .username{
+            display: inline-block;
+        }
+        .email{
+            display: inline-block;
+        }
+        .password1{
+            display: inline-block;
+        }
+        .password2{
+            display: inline-block;
+        }
+        #username{
+            position: absolute;
+            top: 15px;
+            left: 190px;
+            font-family: Chalkboard;
+            margin-left: 31px;
+            background-color: darkslateblue;
+            color: azure;
+            border: 2px solid #261f4a;
+            padding: 5px 10px;
+        }
+        #password1{
+            position: absolute;
+            left: 190px;
+            top: 52px;
+            font-family: Chalkboard;
+            margin-left: 31px;
+            background-color: darkslateblue;
+            color: azure;
+            border: 2px solid #261f4a;
+            padding: 5px 10px;
+            -webkit-text-security: disc;
+        }
+        #password2{
+            position: absolute;
+            left: 190px;
+            top: 90px;
+            font-family: Chalkboard;
+            margin-left: 31px;
+            background-color: darkslateblue;
+            color: azure;
+            border: 2px solid #261f4a;
+            padding: 5px 10px;
+            -webkit-text-security: disc;
+        }
+        #username_label{
+            color: darkslateblue;
+        }
+        #password1_label{
+            color: darkslateblue;
+        }
+        #password2_label{
+            color: darkslateblue;
+        }
+        ::placeholder {
+            color: cadetblue;
+        }
+        input:focus{
+            outline: none;
+        }
+        #submit_button{
+            background-color: darkslateblue;
+            border: solid darkslateblue;
+            color: white;
+            padding: 2px 5px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 16px;
+        }
+        h4{
+            font-family: Chalkboard;
+            position: fixed;
+            top: 180px;
+        }
+        #message{
+            color: darkslateblue;
+            max-height: 0;
+            text-transform: uppercase;
+            background-color: darkslateblue;
+            color: azure;
+        }
+        label {
+            margin-left: 320px;
+            padding-left: 32px;
+            color: darkslateblue;
+            font-family: Cochin;
+        }
+        #button_password1{
+            position: absolute;
+            left: 400px;
+            top: 52px;
+            background-color: darkslateblue;
+            border: solid darkslateblue;
+            color: white;
+            padding: 1px 2px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 11px;
+        }
+        #button_password2{
+            position: absolute;
+            left: 400px;
+            top: 90px;
+            background-color: darkslateblue;
+            border: solid darkslateblue;
+            color: white;
+            padding: 1px 2px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <form method="POST" action="">
+        {% csrf_token %}
+        <p>
+            <div class="username" id="username_label">
+                <big>{{form.username.label}}</big>
+            </div>
+            <div class="username">
+                <input autocomplete="off" id="username" type="text" name="username">
+            </div>
+        </p>
+        <p>
+            <div class="password1" id="password1_label">
+                <big>{{form.password1.label}}</big>
+            </div>
+            <div class="password1">
+                <input autocomplete="off" id="password1" type="text" name="password1">
+                <label id="label_password" for="password1">
+                    <small>do not use common passwords</small>
+                </label>
+            </div>
+        </p>
+        <p>
+{#            {{form.errors}}#}
+            <div class="password2" id="password2_label">
+                <big>{{form.password2.label}}</big>
+            </div>
+            <div class="password2">
+                <input autocomplete="off" id="password2" type="text" name="password2">
+            </div>
+            <input type="button" id="button_password2" onclick=ShowPassword2() value="^*^">
+            <input type="button" id="button_password1" onclick=ShowPassword1() value="^*^">
+            <div id="error"></div>
+        </p>
+        <input id="submit_button" type="submit" name="Create User" value="Register Account">
+        {% if form.errors %}
+            <body onload='GetReminder()'></body>
+        {% endif %}
+        {% for message in messages %}
+            <div id="message">
+                <p><big id="message">{{message}}</big></p>
+            </div>
+        {% endfor %}
+    </form>
+    <h4>If you have an account, Login <a href="/login/">here</a>.</h4>
+    <script>
+        var form_fields = document.getElementsByTagName('input')
+		form_fields[1].placeholder='Username..';
+		form_fields[2].placeholder='Enter password...';
+		form_fields[3].placeholder='Re-enter Password...';
+
+		for (var field in form_fields){
+			form_fields[field].className += ' form-control'
+		}
+
+		function GetReminder(){
+		    document.getElementById('label_password').style.color = 'red'
+		    const Http = new XMLHttpRequest();
+            const url = '/add_error_reminder/';
+            Http.open("GET", url);
+            Http.send();
+            Http.onreadystatechange = (e) => {
+                console.log(Http.responseText);
+                setTimeout(function () {
+                        document.getElementById('username').innerText = '';
+                        document.getElementById('password1').innerText = '';
+                        document.getElementById('password2').innerText = '';
+                        document.getElementById('label_password').style.color = 'darkslateblue'
+                }, 3000);
+                document.getElementById("username").style.background = "#4a080e";
+                document.getElementById("password1").style.background = "#4a080e";
+                document.getElementById("password2").style.background = "#4a080e";
+            }
+        }
+
+        function ShowPassword1(){
+            document.getElementById('password1').style.webkitTextSecurity = 'None'
+            setTimeout(function () {
+                document.getElementById('password1').style.webkitTextSecurity = 'disc'
+            }, 1000);
+        }
+        function ShowPassword2(){
+            document.getElementById('password2').style.webkitTextSecurity = 'None'
+            setTimeout(function () {
+                document.getElementById('password2').style.webkitTextSecurity = 'disc'
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
